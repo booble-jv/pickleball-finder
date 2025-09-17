@@ -1,0 +1,245 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-bg: #ffffff;
+  --color-bg-alt: #f8f9fa;
+  --color-surface: #ffffff;
+  --color-border: #e1e5e9;
+  --color-text: #1f2430;
+  --color-text-dim: #555b66;
+  --color-accent: #667eea;
+  --color-accent-alt: #764ba2;
+  --color-danger: #e53e3e;
+  --color-success: #2f9e44;
+  --color-info: #17a2b8;
+  --color-warning: #f59f00;
+  --color-rating: #ffc107;
+  --color-focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-accent) 40%, transparent);
+  --elevation-1: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02);
+  --elevation-2: 0 2px 6px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+  --elevation-3: 0 6px 18px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+  --titlebar-height: 32px;
+  --window-btn-hover: rgba(0,0,0,0.08);
+  --window-btn-active: rgba(0,0,0,0.16);
+  --easing-standard: cubic-bezier(.4,0,.2,1);
+}
+
+[data-theme="dark"] {
+  --color-bg: #1e1f26;
+  --color-bg-alt: #252732;
+  --color-surface: #2f3241;
+  --color-border: #3a3f52;
+  --color-text: #f5f7fa;
+  --color-text-dim: #b3bbcc;
+  --color-accent: #8899ff;
+  --color-accent-alt: #b18fff;
+  --color-success: #48c06d;
+  --color-info: #4fc3dc;
+  --color-warning: #ffbf3e;
+  --color-rating: #ffd452;
+  --window-btn-hover: rgba(255,255,255,0.1);
+  --window-btn-active: rgba(255,255,255,0.2);
+  --elevation-1: 0 1px 2px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
+  --elevation-2: 0 2px 8px rgba(0,0,0,0.65), 0 1px 4px rgba(0,0,0,0.5);
+  --elevation-3: 0 6px 22px rgba(0,0,0,0.7), 0 2px 10px rgba(0,0,0,0.55);
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-alt) 100%);
+  color: var(--color-text);
+  min-height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth; /* Smooth scrolling */
+  transition: background 0.6s var(--easing-standard), color 0.3s var(--easing-standard);
+}
+
+/* Custom Title Bar */
+.custom-title-bar {
+  display: flex !important;
+  align-items: center;
+  height: var(--titlebar-height);
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+  -webkit-app-region: drag;
+  user-select: none;
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 1000;
+  font-size: 13px;
+  letter-spacing: .2px;
+  will-change: backdrop-filter, background;
+  /* removed contain to avoid any unintended clipping effects with certain browsers */
+  transform: translateZ(0);
+  transition: backdrop-filter .4s var(--easing-standard), background .4s var(--easing-standard), border-color .4s var(--easing-standard);
+}
+
+/* Safety net: enforce fixed if overridden elsewhere */
+body .custom-title-bar.custom-title-bar { position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; }
+
+[data-theme="dark"] .custom-title-bar {
+  background: rgba(40,42,55,0.74);
+  border-bottom-color: rgba(255,255,255,0.08);
+}
+
+/* Reduced transparency support */
+@media (prefers-reduced-transparency: reduce) {
+  .custom-title-bar {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: var(--color-bg-alt) !important;
+  }
+}
+
+/* High contrast / forced colors fallback */
+@media (forced-colors: active) {
+  .custom-title-bar {
+    background: Canvas;
+    border-bottom: 1px solid CanvasText;
+  }
+  .window-control-btn, .theme-toggle-btn { forced-color-adjust: none; color: ButtonText; }
+}
+
+.title-bar-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 12px;
+}
+
+.app-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dev-indicator {
+  font-size: 12px;
+  color: var(--color-danger);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-danger) 18%, transparent);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Flexible spacer & actions group */
+.title-bar-spacer { flex: 1; }
+.title-bar-actions { display: flex; align-items: center; gap: 2px; -webkit-app-region: no-drag; }
+
+.window-controls { display: flex; }
+
+/* Window control buttons */
+.window-control-btn {
+  width: 46px;
+  height: var(--titlebar-height);
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s var(--easing-standard), color 0.3s var(--easing-standard);
+  color: #3d4251;
+  position: relative;
+}
+
+[data-theme="dark"] .window-control-btn { color: var(--color-text-dim); }
+
+.window-control-btn:hover { background: var(--window-btn-hover); }
+.window-control-btn:active { background: var(--window-btn-active); }
+
+.window-control-btn.close-btn:hover { background: var(--color-danger); color: #fff; }
+.window-control-btn.close-btn:active { filter: brightness(.9); }
+
+.window-control-btn svg { flex-shrink: 0; }
+
+/* Theme toggle */
+.theme-toggle-btn {
+  width: 46px;
+  height: var(--titlebar-height);
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  color: #555;
+  transition: background-color 0.2s var(--easing-standard), color 0.3s var(--easing-standard);
+}
+
+[data-theme="dark"] .theme-toggle-btn { color: var(--color-text-dim); }
+
+.theme-toggle-btn:hover { background: var(--window-btn-hover); }
+.theme-toggle-btn:active { background: var(--window-btn-active); }
+
+.theme-toggle-icon { width: 16px; height: 16px; position: relative; }
+.theme-toggle-icon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #ffce54 0%, #f6a821 60%, #ec9514 100%);
+  box-shadow: 0 0 4px rgba(255,200,0,.6), 0 0 8px rgba(255,180,0,.3);
+  transition: transform .6s var(--easing-standard), opacity .6s var(--easing-standard), filter .6s var(--easing-standard);
+}
+
+[data-theme="dark"] .theme-toggle-icon::before {
+  background: radial-gradient(circle at 30% 30%, #b8c6ff 0%, #8293ff 55%, #667eea 100%);
+  box-shadow: 0 0 4px rgba(140,160,255,.7), 0 0 10px rgba(120,140,255,.4);
+  filter: brightness(1.1) saturate(1.2);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+#root { display: flex; flex-direction: column; min-height: 100%; }
+
+/* Hide any accidental nested scrollbars in main layout */
+.main-content { overflow: visible; }
+
+/* Custom scrollbar (webkit) */
+body::-webkit-scrollbar { width: 10px; }
+body::-webkit-scrollbar-track { background: color-mix(in srgb, var(--color-bg-alt) 70%, transparent); }
+body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-accent) 55%, var(--color-bg-alt)); border-radius: 40px; border: 2px solid var(--color-bg-alt); }
+body::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--color-accent) 70%, var(--color-bg-alt)); }
+[data-theme="dark"] body::-webkit-scrollbar-track { background: color-mix(in srgb, var(--color-bg-alt) 30%, transparent); }
+[data-theme="dark"] body::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--color-accent) 50%, var(--color-bg-alt)); border-color: var(--color-bg-alt); }
+
+/* Main content scroll enhancements: ensure hardware acceleration hint minimal */
+.main-content { will-change: contents; }
+
+/* Reduced motion: limit transitions */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}
+
+/* Utility attribute to disable heavy effects (can be added to body via script) */
+body[data-performance="lite"] .custom-title-bar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: var(--color-bg-alt) !important;
+}
+
+body[data-performance="lite"] .card { box-shadow: var(--elevation-1) !important; }

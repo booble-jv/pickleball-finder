@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:;">
+    <title>Pickleball Finder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Custom Title Bar -->
+    <div class="custom-title-bar">
+        <div class="title-bar-content">
+            <div class="app-icon">🏓</div>
+            <div class="app-title">
+                <span>Pickleball Finder</span>
+                <span class="dev-indicator" id="devIndicator" style="display: none;">• DEV</span>
+            </div>
+        </div>
+        <div class="window-controls">
+            <button class="window-control-btn minimize-btn" id="minimizeBtn" title="Minimize">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <rect x="1" y="5" width="10" height="2" fill="currentColor"/>
+                </svg>
+            </button>
+            <button class="window-control-btn maximize-btn" id="maximizeBtn" title="Maximize">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                </svg>
+            </button>
+            <button class="window-control-btn close-btn" id="closeBtn" title="Close">
+                <svg width="12" height="12" viewBox="0 0 12 12">
+                    <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <h1>🏓 Pickleball Finder</h1>
+            <p class="subtitle">Find and connect with pickleball players and courts in your area</p>
+        </header>
+
+        <main class="main-content">
+            <div class="search-section">
+                <h2>Find Courts & Players</h2>
+                <div class="search-form">
+                    <input type="text" id="locationInput" placeholder="Enter your location (city, zip code)">
+                    <button id="searchBtn" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="courts">Courts</button>
+                    <button class="tab-btn" data-tab="players">Players</button>
+                    <button class="tab-btn" data-tab="events">Events</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="courts" class="tab-pane active">
+                        <div class="card-grid" id="courtsGrid">
+                            <!-- Sample court data -->
+                            <div class="card">
+                                <h3>Riverside Park Courts</h3>
+                                <p class="location">📍 123 Park Ave, Downtown</p>
+                                <p class="details">4 courts • Outdoor • Free</p>
+                                <div class="rating">⭐⭐⭐⭐⭐ (4.8)</div>
+                                <button class="btn btn-secondary">View Details</button>
+                            </div>
+                            <div class="card">
+                                <h3>Community Center</h3>
+                                <p class="location">📍 456 Main St, Midtown</p>
+                                <p class="details">2 courts • Indoor • $10/hour</p>
+                                <div class="rating">⭐⭐⭐⭐ (4.2)</div>
+                                <button class="btn btn-secondary">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="players" class="tab-pane">
+                        <div class="card-grid" id="playersGrid">
+                            <!-- Sample player data -->
+                            <div class="card">
+                                <h3>Alex Johnson</h3>
+                                <p class="skill-level">🏅 Intermediate Player</p>
+                                <p class="location">📍 2 miles away</p>
+                                <p class="availability">Available: Weekends</p>
+                                <button class="btn btn-secondary">Connect</button>
+                            </div>
+                            <div class="card">
+                                <h3>Sarah Miller</h3>
+                                <p class="skill-level">🏅 Advanced Player</p>
+                                <p class="location">📍 1.5 miles away</p>
+                                <p class="availability">Available: Evenings</p>
+                                <button class="btn btn-secondary">Connect</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="events" class="tab-pane">
+                        <div class="card-grid" id="eventsGrid">
+                            <!-- Sample event data -->
+                            <div class="card">
+                                <h3>Weekend Tournament</h3>
+                                <p class="date">📅 Saturday, Oct 15th</p>
+                                <p class="location">📍 Riverside Park</p>
+                                <p class="participants">👥 12/16 players</p>
+                                <button class="btn btn-primary">Join Event</button>
+                            </div>
+                            <div class="card">
+                                <h3>Beginner Meetup</h3>
+                                <p class="date">📅 Sunday, Oct 16th</p>
+                                <p class="location">📍 Community Center</p>
+                                <p class="participants">👥 8/12 players</p>
+                                <button class="btn btn-primary">Join Event</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="footer-actions">
+                <button id="addCourtBtn" class="btn btn-outline">Add Court</button>
+                <button id="createEventBtn" class="btn btn-outline">Create Event</button>
+                <button id="settingsBtn" class="btn btn-outline">Settings</button>
+            </div>
+            <div class="app-info">
+                <span id="appVersion">Version loading...</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

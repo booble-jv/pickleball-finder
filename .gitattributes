@@ -1,0 +1,25 @@
+# Ensure consistent LF line endings in repo; let Git convert to CRLF on checkout on Windows if desired
+* text=auto eol=lf
+
+# Explicit text types
+*.js text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+# Keep lockfile exactly as generated (no EOL normalization) to avoid churn
+package-lock.json -text
+*.jsonc text eol=lf
+*.css text eol=lf
+*.scss text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.cjs text eol=lf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary

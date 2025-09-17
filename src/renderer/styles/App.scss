@@ -1,0 +1,5 @@
+// App-level SCSS wrapper; imports existing App.css for now.
+@use 'variables';
+@use 'mixins';
+
+@import './App.css';

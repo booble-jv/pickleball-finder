@@ -1,0 +1,8 @@
+{
+  "watch": ["dist/main.js", "dist/preload.js"],
+  "ext": "js",
+  "exec": "cross-env NODE_ENV=development electron .",
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

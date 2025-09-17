@@ -1,0 +1,7 @@
+// Root SCSS entry that mirrors old index.css plus variables & mixins
+@forward 'variables';
+@use 'variables';
+@use 'mixins';
+
+// Import legacy CSS converted (still referencing CSS variables for runtime theme)
+@import './index.css';

@@ -1,0 +1,23 @@
+// Design tokens & CSS variable fallbacks (still using CSS custom properties for runtime theming)
+// SCSS variables (compile-time) can help generate derived sets if needed later.
+
+$accent: #667eea;
+$accent-alt: #764ba2;
+$danger: #e53e3e;
+$success: #2f9e44;
+$info: #17a2b8;
+$warning: #f59f00;
+$rating: #ffc107;
+$transition-standard: cubic-bezier(.4,0,.2,1);
+
+// Mixin examples
+@mixin focus-ring($color) {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, $color 45%, transparent);
+}
+
+@mixin elevation($level: 1) {
+  @if $level == 1 { box-shadow: 0 1px 2px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.02); }
+  @else if $level == 2 { box-shadow: 0 2px 6px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04); }
+  @else if $level == 3 { box-shadow: 0 6px 18px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); }
+}
