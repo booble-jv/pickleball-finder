@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog, shell } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 
 const isDev = !app.isPackaged;
 
@@ -26,20 +27,35 @@ function createWindow(): void {
   });
 
   // Load the app
-  const startUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../renderer/index.html')}`;
-  console.log('Loading URL:', startUrl, 'isDev:', isDev);
-  
+  // In compiled code __dirname points to dist/. The built renderer assets live in dist/renderer.
+  // Previous path used ../renderer which pointed outside dist and failed to find index.html.
+  const rendererIndexPath = path.join(__dirname, 'renderer', 'index.html');
+  const fileExists = fs.existsSync(rendererIndexPath);
+  if (!fileExists) {
+    console.error('Renderer index.html not found at expected path:', rendererIndexPath);
+  } else {
+    console.log('Resolved renderer index.html path:', rendererIndexPath);
+  }
+  const fileUrl = `file://${rendererIndexPath.replace(/\\/g, '/')}`;
+  const forceFile = process.env.ELECTRON_FORCE_FILE === '1';
+  const startUrl = (isDev && !forceFile) ? 'http://localhost:3000' : fileUrl;
+  console.log('Loading URL:', startUrl, 'isDev:', isDev, 'forceFile:', forceFile);
+
   mainWindow.loadURL(startUrl);
 
   // Handle load errors
   mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
     console.error('Failed to load:', errorCode, errorDescription, validatedURL);
-    if (isDev) {
-      // If dev server failed, try to reload after a delay
+    if (errorDescription.includes('ERR_CONNECTION_REFUSED')) {
+      if (isDev) {
+        console.log('Dev server not available, falling back to local file...');
+        mainWindow?.loadURL(fileUrl);
+      }
+    } else if (isDev) {
       setTimeout(() => {
         console.log('Retrying to load dev server...');
         mainWindow?.loadURL('http://localhost:3000');
-      }, 2000);
+      }, 1500);
     }
   });
 
@@ -78,6 +94,20 @@ function createWindow(): void {
         mainWindow.webContents.reload();
       }
     });
+
+    // Capture renderer console messages into a log file for debugging white screen
+    const logFile = path.join(app.getPath('userData'), 'renderer.log');
+    const appendLog = (line: string) => {
+      try { fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${line}\n`); } catch {}
+    };
+    mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      appendLog(`console[level=${level}] ${message} (${sourceId}:${line ?? ''})`);
+    });
+    mainWindow.webContents.on('render-process-gone', (_event, details) => {
+      appendLog(`render-process-gone: ${JSON.stringify(details)}`);
+    });
+    mainWindow.webContents.on('unresponsive', () => appendLog('Renderer became unresponsive'));
+    mainWindow.webContents.on('did-finish-load', () => appendLog('did-finish-load fired'));
   }
 }
 
@@ -96,7 +126,7 @@ function createMenu(): void {
               type: 'info',
               title: 'About Pickleball Finder',
               message: 'Pickleball Finder',
-              detail: 'Find and connect with pickleball players and courts in your area.\nVersion 1.0.0'
+              detail: `Find and connect with pickleball players and courts in your area.\nVersion ${app.getVersion()}`
             });
           }
         },

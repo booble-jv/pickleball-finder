@@ -10,6 +10,9 @@ A modern desktop application built with Electron, React, and TypeScript for find
 - **Responsive Design**: Modern UI with CSS Grid and Flexbox
 - **Type Safety**: Full TypeScript implementation
 - **Hot Reload**: Development environment with live reloading
+- **Real Court Data (OSM)**: Searches OpenStreetMap (Overpass API) for pickleball courts near a location (city or ZIP)
+- **Geocoding**: Nominatim lookup for user-entered locations
+- **In‑Memory Caching**: Court + geocode results cached for faster repeat searches
 
 ## 📋 Prerequisites
 
@@ -201,6 +204,15 @@ Fix any TypeScript errors before building.
 
 MIT License - see LICENSE file for details.
 
+## 🔐 Privacy & Attribution
+
+This project does not collect personal data. Searches are sent directly to OpenStreetMap services (Nominatim + Overpass) only for resolving locations and retrieving court data. No analytics SDKs are bundled.
+
+- Privacy Policy: See [PRIVACY_POLICY.md](./PRIVACY_POLICY.md)
+- Data © OpenStreetMap contributors. See the attribution section inside the app footer.
+- All requests use HTTPS; no tracking cookies are set.
+
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -212,3 +224,46 @@ MIT License - see LICENSE file for details.
 ---
 
 Built with ❤️ using Electron, React, and TypeScript
+
+---
+
+## 🗺️ Court Data & Search
+
+The application now fetches real pickleball court data from **OpenStreetMap** using the **Overpass API** when you search for a city or ZIP code:
+
+1. User enters location (e.g. "Seattle", "10001").
+2. We geocode the string via **Nominatim** (OSM geocoder) to latitude/longitude.
+3. We query Overpass within a 20km radius for features tagged:
+   - `leisure=pitch` + `sport=pickleball`
+   - or any element with `sport=pickleball`
+4. Results are deduplicated and displayed in the Courts tab.
+
+### Caching
+An in‑memory cache stores:
+- Geocode results (7 days)
+- Court queries keyed by rounded lat/lon + radius (7 days)
+
+### Attribution
+Footer includes: `Data: © OpenStreetMap contributors` (required by ODbL).
+
+### Extending Data
+You can add more sources (municipal open data, Places APIs) by creating new service modules under `src/renderer/services/` and merging results into the Courts state.
+
+### Rate Limiting / Courtesy
+- Avoid firing multiple searches per keypress—current UI triggers only on submit.
+- Overpass queries are bounded to 20km; adjust radius in `fetchCourtsByLatLon` if needed.
+
+### Adding Persistence
+For offline caching or cross-session reuse, persist the cache map (e.g. to `localStorage` or IndexedDB) and hydrate on startup.
+
+## 🔍 Relevant Source Files
+- `src/renderer/services/geocode.ts` – Nominatim geocode helper
+- `src/renderer/services/osmCourts.ts` – Overpass court fetch + cache
+- `src/renderer/App.tsx` – Integration & rendering logic
+- `src/renderer/__tests__/osmCourts.test.ts` – Mapper/dedup test
+
+## ✅ Future Enhancements
+- Persistent (IndexedDB) cache
+- Multi-source aggregation (city open data, user submissions)
+- Map view with clustering
+- User-added temporary courts with moderation flow

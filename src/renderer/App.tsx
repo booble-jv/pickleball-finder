@@ -1,21 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import SearchSection from './components/SearchSection';
 import CustomTitleBar from './components/CustomTitleBar';
+import { geocodeLocation } from './services/geocode';
+import { fetchCourtsByLatLon, Court } from './services/osmCourts';
 
 export type TabType = 'courts' | 'players' | 'events';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>('courts');
-  const [searchResults, setSearchResults] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     const stored = localStorage.getItem('pf-theme');
     return stored === 'dark' ? 'dark' : 'light';
   });
+  const [appVersion, setAppVersion] = useState<string>('');
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('pf-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    // Fetch version from main via preload (if available)
+    (async () => {
+      try {
+        if (window.electronAPI?.getAppVersion) {
+          const v = await window.electronAPI.getAppVersion();
+            setAppVersion(v);
+        }
+      } catch {
+        // ignore
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     // Attach theme toggle button logic (simple query: theme-toggle-btn) since button lives in title bar
@@ -29,10 +49,30 @@ const App: React.FC = () => {
   console.log('🚀 App component is rendering!');
   console.log('ActiveTab:', activeTab);
 
-  const handleSearch = (location: string) => {
-    console.log('Searching for:', location);
-    setSearchResults(`Searching for pickleball courts and players in: ${location}`);
-    // Here you would typically make an API call to fetch real data
+  const handleSearch = async (location: string) => {
+    setSearchQuery(location);
+    setError(null);
+    setLoading(true);
+    setCourts([]);
+    const controller = new AbortController();
+    try {
+      const geo = await geocodeLocation(location, controller.signal);
+      if (!geo) {
+        setError('Location not found. Try a city name or ZIP code.');
+        return;
+      }
+      const results = await fetchCourtsByLatLon(geo.lat, geo.lon, 20000, controller.signal);
+      setCourts(results);
+      if (results.length === 0) {
+        setError('No courts found within 20km. Try another location or widen your search.');
+      }
+    } catch (e: unknown) {
+      if (typeof e === 'object' && e && 'name' in e && (e as { name?: string }).name === 'AbortError') return;
+      const msg = typeof e === 'object' && e && 'message' in e ? String((e as { message?: unknown }).message) : 'Search failed.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleTabClick = (tab: TabType) => {
@@ -74,28 +114,33 @@ const App: React.FC = () => {
           </div>
 
           <div className="tab-content">
-            {searchResults && (
+            {searchQuery && (
               <div className="search-results">
-                <p>{searchResults}</p>
+                <p>Results for: <strong>{searchQuery}</strong></p>
               </div>
             )}
+            {loading && <p>Loading courts…</p>}
+            {error && <p className="error-text">{error}</p>}
             
             <div className={`tab-pane ${activeTab === 'courts' ? 'active' : ''}`}>
               <div className="card-grid">
-                <div className="card">
-                  <h3>Riverside Park Courts</h3>
-                  <p className="location">📍 123 Park Ave, Downtown</p>
-                  <p className="details">4 courts • Outdoor • Free</p>
-                  <div className="rating">⭐⭐⭐⭐⭐ (4.8)</div>
-                  <button className="btn btn-secondary">View Details</button>
-                </div>
-                <div className="card">
-                  <h3>Community Center</h3>
-                  <p className="location">📍 456 Main St, Midtown</p>
-                  <p className="details">2 courts • Indoor • $10/hour</p>
-                  <div className="rating">⭐⭐⭐⭐ (4.2)</div>
-                  <button className="btn btn-secondary">View Details</button>
-                </div>
+                {courts.map(c => {
+                  const [, osmType, osmId] = c.id.split('-');
+                  const osmUrl = `https://www.openstreetmap.org/${osmType}/${osmId}`;
+                  return (
+                    <div className="card" key={c.id}>
+                      <h3>{c.displayName}</h3>
+                      <p className="location">📍 {c.address || `${c.latitude.toFixed(4)}, ${c.longitude.toFixed(4)}`}</p>
+                      <p className="details">
+                        {c.surface ? `${c.surface} surface` : 'Surface: n/a'}
+                        {c.lighting ? ' • Lit' : ''}
+                        {c.covered ? ' • Covered' : ''}
+                      </p>
+                      <div className="rating">Source: OSM</div>
+                      <button className="btn btn-secondary" onClick={() => window.open(osmUrl, '_blank')}>View on OSM</button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -147,7 +192,13 @@ const App: React.FC = () => {
           <button className="btn btn-outline">Settings</button>
         </div>
         <div className="app-info">
-          <span>Version 1.0.0</span>
+          <span>Version {appVersion || '—'}</span>
+          <span style={{ marginLeft: '1rem', fontSize: '0.75rem' }}>Data: © OpenStreetMap contributors</span>
+          <button
+            className="btn btn-outline"
+            style={{ marginLeft: '1rem' }}
+            onClick={() => window.open('https://www.openstreetmap.org/copyright', '_blank')}
+          >Attribution</button>
         </div>
       </footer>
     </div>

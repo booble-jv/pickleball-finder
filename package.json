@@ -11,6 +11,7 @@
   "license": "MIT",
   "scripts": {
     "start": "cross-env NODE_ENV=production electron .",
+  "start:prod": "npm run build:prepare && cross-env NODE_ENV=production ELECTRON_FORCE_FILE=1 electron .",
     "dev": "concurrently \"npm run dev:react\" \"npm run dev:electron\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=development electron . --dev\"",
     "dev:react": "webpack serve --mode development --port 3000",
     "dev:electron": "tsc -w -p tsconfig.main.json",
@@ -18,7 +19,9 @@
     "build:react": "webpack --mode production && node scripts/inject-prod-csp.js",
     "build:electron": "tsc -p tsconfig.main.json",
     "build:win": "npm run build && electron-builder --win",
-    "build:msix": "npm run build && electron-builder --win --x64 --publish=never",
+  "build:prepare": "npm run build:react && npm run build:electron",
+  "build:appx": "npm run build:prepare && electron-builder --win appx --x64 --publish=never",
+  "build:nsis": "npm run build:prepare && electron-builder --win nsis --x64 --publish=never",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build",
     "postinstall": "electron-builder install-app-deps",
@@ -37,9 +40,11 @@
       "buildResources": "build"
     },
     "files": [
-      "dist/**/*",
-      "node_modules/**/*",
-      "package.json"
+      "dist/main.js",
+      "dist/preload.js",
+      "dist/renderer/**",
+      "package.json",
+      "!dist/build/**"
     ],
     "extraResources": [
       {
@@ -66,20 +71,20 @@
         }
       ],
       "icon": "build/icon.ico",
-      "publisherName": "Your Publisher Name",
+      "publisherName": "booble",
       "requestedExecutionLevel": "asInvoker"
     },
     "appx": {
       "applicationId": "PickleballFinder",
       "backgroundColor": "#464646",
       "displayName": "Pickleball Finder",
-      "identityName": "YourPublisherName.PickleballFinder",
-      "publisherDisplayName": "Your Publisher Name",
+      "identityName": "booble.PickleballFinder",
+      "publisherDisplayName": "booble",
       "languages": [
         "en-US"
       ],
-      "showNameOnTiles": true,
-      "setBuildNumber": true
+      "setBuildNumber": true,
+      "publisher": "CN=1A82A13B-AAA9-4DBF-A256-14717E9367D8"
     },
     "nsis": {
       "oneClick": false,

@@ -4,15 +4,18 @@ import App from './App';
 import './styles/index.scss';
 import './styles/App.scss';
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean; error?: any }> {
-  constructor(props: any) {
+interface ErrorBoundaryProps { children: React.ReactNode }
+interface ErrorBoundaryState { hasError: boolean; error?: unknown }
+
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
   }
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: unknown): ErrorBoundaryState {
     return { hasError: true, error };
   }
-  componentDidCatch(error: any, info: any) {
+  componentDidCatch(error: unknown, info: unknown) {
     console.error('Renderer error boundary caught:', error, info);
   }
   render() {

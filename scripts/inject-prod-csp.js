@@ -9,6 +9,8 @@ if (!fs.existsSync(file)) {
   process.exit(0);
 }
 let html = fs.readFileSync(file, 'utf8');
-html = html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; img-src \'self\' data:; style-src \'self\' \'unsafe-inline\'; script-src \'self\'; connect-src \'self\'; font-src \'self\'; object-src \'none\'; base-uri \'self\'; form-action \'self\';">');
+// Allow required external APIs (Overpass + Nominatim). Disallow framing. Keep inline styles only (no inline scripts).
+const cspTag = '<meta http-equiv="Content-Security-Policy" content="default-src \'self\'; img-src \'self\' data:; style-src \'self\' \'unsafe-inline\'; script-src \'self\'; connect-src \'self\' https://overpass-api.de https://nominatim.openstreetmap.org; font-src \'self\'; object-src \'none\'; base-uri \'self\'; form-action \'self\'; frame-ancestors \'none\';">';
+html = html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, cspTag);
 fs.writeFileSync(file, html, 'utf8');
 console.log('[inject-prod-csp] Applied production CSP');

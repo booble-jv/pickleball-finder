@@ -5,7 +5,7 @@ interface ElectronAPI {
   getAppVersion: () => Promise<string>;
   isDevMode: () => Promise<boolean>;
   showMessageBox: (options: Electron.MessageBoxOptions) => Promise<Electron.MessageBoxReturnValue>;
-  onMenuAction: (callback: (action: string, data?: any) => void) => void;
+  onMenuAction: (callback: (action: 'new-file' | 'open-file', data?: string) => void) => void;
   removeAllListeners: (channel: string) => void;
   windowControl: (action: 'minimize' | 'maximize' | 'close') => void;
   isMaximized: () => Promise<boolean>;
@@ -18,7 +18,7 @@ const electronAPI: ElectronAPI = {
   isDevMode: () => ipcRenderer.invoke('is-dev-mode'),
   showMessageBox: (options: Electron.MessageBoxOptions) => 
     ipcRenderer.invoke('show-message-box', options),
-  onMenuAction: (callback: (action: string, data?: any) => void) => {
+  onMenuAction: (callback: (action: 'new-file' | 'open-file', data?: string) => void) => {
     ipcRenderer.on('menu-new-file', () => callback('new-file'));
     ipcRenderer.on('menu-open-file', (event, filePath) => callback('open-file', filePath));
   },
@@ -38,9 +38,17 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electronAPI', electronAPI);
   } catch (error) {
-    console.error(error);
+    console.error('Failed to expose electronAPI', error);
   }
 } else {
-  // @ts-ignore (define in dts file)
+  // @ts-expect-error: injected for non-isolated context fallback; declaration provided in types/electron.d.ts
   window.electronAPI = electronAPI;
 }
+
+// Global error instrumentation
+window.addEventListener('error', (e) => {
+  console.error('[window.error]', e.message, e.filename, e.lineno, e.colno);
+});
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('[unhandledrejection]', e.reason);
+});

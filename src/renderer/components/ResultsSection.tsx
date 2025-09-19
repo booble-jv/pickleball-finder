@@ -34,7 +34,6 @@ export interface Event {
 interface ResultsSectionProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
-  searchLocation: string;
 }
 
 // Sample data
@@ -101,8 +100,7 @@ const sampleEvents: Event[] = [
 
 const ResultsSection: React.FC<ResultsSectionProps> = ({ 
   activeTab, 
-  onTabChange, 
-  searchLocation 
+  onTabChange
 }) => {
   const handleTabClick = (tab: TabType) => {
     onTabChange(tab);

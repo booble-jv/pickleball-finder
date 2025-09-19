@@ -12,7 +12,8 @@ module.exports = {
   mode: isDevelopment ? 'development' : 'production',
   entry: './src/renderer/index.tsx',
   // Faster initial build with cheap-module-source-map; still good line mapping
-  devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
+  // Use full but hidden source maps in production for debugging without shipping easily discoverable maps
+  devtool: isDevelopment ? 'cheap-module-source-map' : 'hidden-source-map',
   cache: isDevelopment ? {
     type: 'filesystem',
     buildDependencies: {
